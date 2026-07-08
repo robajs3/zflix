@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Rejestracja — Zjebflix{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+{% block content %}
+<div class="auth-screen">
+  <div class="auth-card">
+    <a href="/zjebflix/" class="brand brand--auth">ZJEBFLIX</a>
+    <h1>Załóż konto</h1>
+    <p class="auth-card__subtitle">Dostęp tylko dla zaproszonych — potrzebujesz kodu od administratora.</p>
+
+    <form method="post" class="auth-form">
+      <label class="field">
+        <span>Kod zaproszenia</span>
+        <input type="text" name="invite_code" class="field--mono" placeholder="XXXX-XXXX-XXXX" required autofocus>
+      </label>
+
+      <label class="field">
+        <span>Nazwa użytkownika</span>
+        <input type="text" name="username" required minlength="3" value="{{ username or '' }}">
+      </label>
+
+      <label class="field">
+        <span>E-mail</span>
+        <input type="email" name="email" required value="{{ email or '' }}">
+      </label>
+
+      <label class="field">
+        <span>Hasło</span>
+        <input type="password" name="password" required minlength="8" autocomplete="new-password">
+      </label>
+
+      <label class="field">
+        <span>Powtórz hasło</span>
+        <input type="password" name="password_confirm" required minlength="8" autocomplete="new-password">
+      </label>
+
+      <button type="submit" class="btn btn--primary btn--block">Utwórz konto</button>
+    </form>
+
+    <p class="auth-card__footer">
+      Masz już konto? <a href="{{ url_for('auth.login') }}">Zaloguj się</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

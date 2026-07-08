@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Kody zaproszeń — Zjebflix{% endblock %}
+{% block body_class %}page-admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+  <div class="admin-page__header">
+    <h1>Kody zaproszeń</h1>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn--ghost">Wróć do filmów</a>
+  </div>
+
+  <form method="post" class="codes-generate">
+    <label class="checkbox-field">
+      <input type="checkbox" name="grants_admin">
+      <span>Ten kod nadaje uprawnienia administratora</span>
+    </label>
+    <button type="submit" class="btn btn--primary">+ Wygeneruj nowy kod</button>
+  </form>
+
+  {% if not codes %}
+    <div class="empty-state">
+      <h2>Brak kodów</h2>
+      <p>Wygeneruj pierwszy kod zaproszenia, aby ktoś mógł się zarejestrować.</p>
+    </div>
+  {% else %}
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Kod</th>
+          <th>Status</th>
+          <th>Uprawnienia</th>
+          <th>Wykorzystany przez</th>
+          <th>Utworzony</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for code in codes %}
+        <tr>
+          <td><span class="code-chip">{{ code.code }}</span></td>
+          <td>
+            {% if code.is_used %}
+              <span class="badge badge--used">Wykorzystany</span>
+            {% else %}
+              <span class="badge badge--free">Wolny</span>
+            {% endif %}
+          </td>
+          <td>{{ "Admin" if code.grants_admin else "Użytkownik" }}</td>
+          <td>{{ code.used_by.username if code.used_by else "—" }}</td>
+          <td>{{ code.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td class="admin-table__actions">
+            {% if not code.is_used %}
+            <form action="{{ url_for('admin.invite_code_delete', code_id=code.id) }}" method="post"
+                  onsubmit="return confirm('Usunąć ten kod?');">
+              <button type="submit" class="btn btn--tiny btn--danger">Usuń</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

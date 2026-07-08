@@ -1,0 +1,7 @@
+<svg width="300" height="450" viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
+  <rect width="300" height="450" fill="#17171C"/>
+  <rect x="0.5" y="0.5" width="299" height="449" fill="none" stroke="#2A2A32" stroke-width="1"/>
+  <text x="150" y="215" font-family="Arial, sans-serif" font-size="20" fill="#9A9AA5" text-anchor="middle">BRAK</text>
+  <text x="150" y="245" font-family="Arial, sans-serif" font-size="20" fill="#9A9AA5" text-anchor="middle">PLAKATU</text>
+  <path d="M130 300 L130 340 L175 320 Z" fill="#FF3355"/>
+</svg>

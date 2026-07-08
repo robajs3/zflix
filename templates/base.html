@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Zjebflix{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/zjebflix/static/css/style.css">
+{% block extra_head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+{% if current_user.is_authenticated %}
+<header class="topnav">
+  <div class="topnav__inner">
+    <a class="brand" href="{{ url_for('main.library') }}">ZJEBFLIX</a>
+
+    <form class="search" action="{{ url_for('main.library') }}" method="get">
+      <svg class="search__icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+        <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input type="text" name="q" placeholder="Szukaj filmów…" value="{{ search or '' }}">
+    </form>
+
+    <nav class="topnav__links">
+      {% if current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}" class="topnav__link">Panel admina</a>
+      {% endif %}
+      <span class="topnav__user">{{ current_user.username }}</span>
+      <a href="{{ url_for('auth.logout') }}" class="topnav__link topnav__link--logout">Wyloguj</a>
+    </nav>
+  </div>
+</header>
+{% endif %}
+
+<main>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-stack">
+        {% for category, message in messages %}
+          <div class="flash flash--{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>
