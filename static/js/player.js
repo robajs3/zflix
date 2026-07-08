@@ -1,21 +1,21 @@
 (function () {
-  const video = document.getElementById("zjVideo");
+  const video = document.getElementById("zfVideo");
   const stage = document.getElementById("playerStage");
-  const controls = document.getElementById("zjControls");
-  const bigPlay = document.getElementById("zjBigPlay");
-  const playPauseBtn = document.getElementById("zjPlayPause");
-  const iconPlay = document.getElementById("zjIconPlay");
-  const iconPause = document.getElementById("zjIconPause");
-  const progressWrap = document.getElementById("zjProgressWrap");
-  const played = document.getElementById("zjPlayed");
-  const buffered = document.getElementById("zjBuffered");
-  const handle = document.getElementById("zjHandle");
-  const timeLabel = document.getElementById("zjTime");
-  const muteBtn = document.getElementById("zjMute");
-  const iconVolume = document.getElementById("zjIconVolume");
-  const iconMuted = document.getElementById("zjIconMuted");
-  const volumeSlider = document.getElementById("zjVolume");
-  const fullscreenBtn = document.getElementById("zjFullscreen");
+  const controls = document.getElementById("zfControls");
+  const bigPlay = document.getElementById("zfBigPlay");
+  const playPauseBtn = document.getElementById("zfPlayPause");
+  const iconPlay = document.getElementById("zfIconPlay");
+  const iconPause = document.getElementById("zfIconPause");
+  const progressWrap = document.getElementById("zfProgressWrap");
+  const played = document.getElementById("zfPlayed");
+  const buffered = document.getElementById("zfBuffered");
+  const handle = document.getElementById("zfHandle");
+  const timeLabel = document.getElementById("zfTime");
+  const muteBtn = document.getElementById("zfMute");
+  const iconVolume = document.getElementById("zfIconVolume");
+  const iconMuted = document.getElementById("zfIconMuted");
+  const volumeSlider = document.getElementById("zfVolume");
+  const fullscreenBtn = document.getElementById("zfFullscreen");
 
   if (!video) return;
 

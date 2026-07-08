@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Odcinki — {{ series.title }} — Zflix{% endblock %}
+{% block body_class %}page-admin{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+  <div class="admin-page__header">
+    <h1>Odcinki: {{ series.title }}</h1>
+    <div class="admin-page__actions">
+      <a href="{{ url_for('admin.movie_edit', movie_id=series.id) }}" class="btn btn--ghost">Edytuj serial</a>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn--ghost">Wróć do biblioteki</a>
+      <a href="{{ url_for('admin.episode_new', series_id=series.id) }}" class="btn btn--primary">+ Dodaj odcinek</a>
+    </div>
+  </div>
+
+  {% if not seasons %}
+    <div class="empty-state">
+      <h2>Brak odcinków</h2>
+      <p>Dodaj pierwszy odcinek tego serialu.</p>
+    </div>
+  {% else %}
+    {% for season_number, episodes in seasons.items() %}
+    <div class="admin-table-wrap admin-season-block">
+      <h2 class="row__title">Sezon {{ season_number }}</h2>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Tytuł</th>
+            <th>Czas</th>
+            <th>Źródło</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for episode in episodes %}
+          <tr>
+            <td>{{ episode.episode_number }}</td>
+            <td>{{ episode.title or "—" }}</td>
+            <td>{{ episode.duration_label or "—" }}</td>
+            <td>
+              {% if episode.source_type == "upload" %}
+                <span class="badge badge--upload">Plik</span>
+              {% else %}
+                <span class="badge badge--external">Link</span>
+              {% endif %}
+            </td>
+            <td class="admin-table__actions">
+              <a href="{{ url_for('admin.episode_edit', series_id=series.id, episode_id=episode.id) }}" class="btn btn--tiny btn--ghost">Edytuj</a>
+              <form action="{{ url_for('admin.episode_delete', series_id=series.id, episode_id=episode.id) }}" method="post"
+                    onsubmit="return confirm('Na pewno usunąć ten odcinek?');">
+                <button type="submit" class="btn btn--tiny btn--danger">Usuń</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

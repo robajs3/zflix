@@ -12,12 +12,12 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL",
-        "postgresql+psycopg2://zjebflix_user:zjebflix_pass@localhost:5432/zjebflix",
+        "postgresql+psycopg2://zflix_user:zflix_pass@localhost:5432/zflix",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Prefiks, pod którym działa cała aplikacja
-    URL_PREFIX = "/zjebflix"
+    URL_PREFIX = "/zflix"
 
     # Katalogi na pliki wgrywane przez admina
     UPLOAD_FOLDER_VIDEOS = str(BASE_DIR / "static" / "uploads" / "videos")

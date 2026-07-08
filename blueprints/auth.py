@@ -65,7 +65,7 @@ def register():
         db.session.commit()
 
         login_user(user)
-        flash(f"Witaj w Zjebflixie, {user.username}!", "success")
+        flash(f"Witaj w Zflixie, {user.username}!", "success")
         return redirect(url_for("main.library"))
 
     return render_template("auth/register.html")

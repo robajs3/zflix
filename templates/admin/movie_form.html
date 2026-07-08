@@ -1,16 +1,40 @@
 {% extends "base.html" %}
-{% block title %}{{ "Edytuj film" if movie else "Nowy film" }} — Zjebflix{% endblock %}
+{% block title %}{{ "Edytuj wpis" if movie else "Nowa pozycja" }} — Zflix{% endblock %}
 {% block body_class %}page-admin{% endblock %}
 
 {% block content %}
 {% set src = form if form else movie %}
 <div class="admin-page admin-page--narrow">
   <div class="admin-page__header">
-    <h1>{{ "Edytuj film" if movie else "Dodaj nowy film" }}</h1>
+    <h1>{{ "Edytuj wpis" if movie else "Dodaj film lub serial" }}</h1>
     <a href="{{ url_for('admin.dashboard') }}" class="btn btn--ghost">Anuluj</a>
   </div>
 
   <form method="post" enctype="multipart/form-data" class="movie-form">
+    {% set selected_media_type = (src.media_type if src and src.media_type else 'movie') %}
+    <fieldset class="field-group">
+      <legend>Typ *</legend>
+      <div class="radio-tabs">
+        <label class="radio-tab">
+          <input type="radio" name="media_type" value="movie" id="typeMovie"
+                 {% if selected_media_type == 'movie' %}checked{% endif %}
+                 {% if movie %}disabled{% endif %}>
+          <span>Film</span>
+        </label>
+        <label class="radio-tab">
+          <input type="radio" name="media_type" value="series" id="typeSeries"
+                 {% if selected_media_type == 'series' %}checked{% endif %}
+                 {% if movie %}disabled{% endif %}>
+          <span>Serial</span>
+        </label>
+      </div>
+      {% if movie %}
+        <!-- Typ nie może się zmienić po utworzeniu wpisu, żeby nie gubić danych wideo/odcinków -->
+        <input type="hidden" name="media_type" value="{{ selected_media_type }}">
+        <p class="field-hint">Typu nie można zmienić po utworzeniu wpisu.</p>
+      {% endif %}
+    </fieldset>
+
     <label class="field">
       <span>Tytuł *</span>
       <input type="text" name="title" required value="{{ src.title if src else '' }}">
@@ -39,7 +63,7 @@
     </div>
 
     {% set selected_source = (src.source_type if src and src.source_type else 'upload') %}
-    <fieldset class="field-group">
+    <fieldset class="field-group" id="movieSourceGroup">
       <legend>Źródło wideo *</legend>
       <div class="radio-tabs">
         <label class="radio-tab">
@@ -66,6 +90,17 @@
       </div>
     </fieldset>
 
+    <div class="field-group field-group--info" id="seriesInfoGroup">
+      <p class="field-hint">
+        Serial nie ma jednego pliku wideo — dodaje się odcinki osobno, po zapisaniu tego formularza.
+      </p>
+      {% if movie %}
+        <a href="{{ url_for('admin.episode_list', series_id=movie.id) }}" class="btn btn--ghost">
+          Zarządzaj odcinkami ({{ movie.episode_count() }})
+        </a>
+      {% endif %}
+    </div>
+
     <fieldset class="field-group">
       <legend>Plakat</legend>
       <div class="field-row">
@@ -84,7 +119,7 @@
     </fieldset>
 
     <button type="submit" class="btn btn--primary btn--block">
-      {{ "Zapisz zmiany" if movie else "Dodaj film do biblioteki" }}
+      {{ "Zapisz zmiany" if movie else "Dodaj do biblioteki" }}
     </button>
   </form>
 </div>
@@ -106,5 +141,22 @@
   uploadRadio.addEventListener("change", syncSourceFields);
   externalRadio.addEventListener("change", syncSourceFields);
   syncSourceFields();
+
+  const typeMovieRadio = document.getElementById("typeMovie");
+  const typeSeriesRadio = document.getElementById("typeSeries");
+  const movieSourceGroup = document.getElementById("movieSourceGroup");
+  const seriesInfoGroup = document.getElementById("seriesInfoGroup");
+
+  function syncTypeFields() {
+    const isSeries = typeSeriesRadio.checked;
+    movieSourceGroup.style.display = isSeries ? "none" : "block";
+    seriesInfoGroup.style.display = isSeries ? "block" : "none";
+  }
+
+  if (typeMovieRadio && typeSeriesRadio) {
+    typeMovieRadio.addEventListener("change", syncTypeFields);
+    typeSeriesRadio.addEventListener("change", syncTypeFields);
+  }
+  syncTypeFields();
 </script>
 {% endblock %}

@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from datetime import datetime
 
 from flask_login import UserMixin
@@ -63,10 +64,15 @@ class Movie(db.Model):
     release_year = db.Column(db.Integer, nullable=True)
     duration_label = db.Column(db.String(20), nullable=True)  # np. "1g 42min"
 
+    # "movie" (pojedynczy film) | "series" (serial z sezonami/odcinkami)
+    media_type = db.Column(db.String(20), nullable=False, default="movie")
+
     poster_path = db.Column(db.String(500), nullable=True)  # plik wgrany lokalnie
     poster_url = db.Column(db.String(500), nullable=True)  # zewnętrzny URL plakatu
 
-    source_type = db.Column(db.String(20), nullable=False)  # "upload" | "external"
+    # Pola poniżej dotyczą wyłącznie filmów (media_type == "movie").
+    # Dla seriali wideo trzyma się na poziomie odcinków (patrz: Episode).
+    source_type = db.Column(db.String(20), nullable=True)  # "upload" | "external"
     video_path = db.Column(db.String(500), nullable=True)  # plik wgrany lokalnie
     external_url = db.Column(db.String(500), nullable=True)  # link zewnętrzny
 
@@ -80,13 +86,71 @@ class Movie(db.Model):
         "User", back_populates="movies_added", foreign_keys=[added_by_id]
     )
 
+    episodes = db.relationship(
+        "Episode",
+        back_populates="series",
+        cascade="all, delete-orphan",
+        order_by="[Episode.season_number, Episode.episode_number]",
+    )
+
     def poster_src(self) -> str:
         """Zwraca URL plakatu do wyświetlenia w szablonie."""
         if self.poster_path:
-            return f"/zjebflix/static/uploads/posters/{self.poster_path}"
+            return f"/zflix/static/uploads/posters/{self.poster_path}"
         if self.poster_url:
             return self.poster_url
-        return "/zjebflix/static/img/placeholder-poster.svg"
+        return "/zflix/static/img/placeholder-poster.svg"
+
+    def is_series(self) -> bool:
+        return self.media_type == "series"
+
+    def seasons(self):
+        """Grupuje odcinki serialu wg numeru sezonu, w kolejności rosnącej."""
+        grouped = OrderedDict()
+        for episode in self.episodes:
+            grouped.setdefault(episode.season_number, []).append(episode)
+        return grouped
+
+    def episode_count(self) -> int:
+        return len(self.episodes)
 
     def __repr__(self):
-        return f"<Movie {self.title}>"
+        kind = "Series" if self.is_series() else "Movie"
+        return f"<{kind} {self.title}>"
+
+
+class Episode(db.Model):
+    __tablename__ = "episodes"
+    __table_args__ = (
+        db.UniqueConstraint(
+            "series_id", "season_number", "episode_number", name="uq_episode_position"
+        ),
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    series_id = db.Column(db.Integer, db.ForeignKey("movies.id"), nullable=False)
+
+    season_number = db.Column(db.Integer, nullable=False, default=1)
+    episode_number = db.Column(db.Integer, nullable=False, default=1)
+
+    title = db.Column(db.String(255), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    duration_label = db.Column(db.String(20), nullable=True)
+
+    source_type = db.Column(db.String(20), nullable=False)  # "upload" | "external"
+    video_path = db.Column(db.String(500), nullable=True)
+    external_url = db.Column(db.String(500), nullable=True)
+
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    series = db.relationship("Movie", back_populates="episodes")
+
+    def display_title(self) -> str:
+        base = f"Odcinek {self.episode_number}"
+        return f"{base}: {self.title}" if self.title else base
+
+    def __repr__(self):
+        return f"<Episode S{self.season_number}E{self.episode_number} of series_id={self.series_id}>"

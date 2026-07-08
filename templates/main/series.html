@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ series.title }} — Zflix{% endblock %}
+{% block body_class %}page-series{% endblock %}
+
+{% block content %}
+<section class="hero hero--compact" style="--hero-image: url('{{ series.poster_src() }}')">
+  <div class="hero__scrim"></div>
+  <div class="hero__content">
+    <p class="hero__eyebrow">Serial</p>
+    <h1 class="hero__title">{{ series.title }}</h1>
+    <p class="hero__meta">
+      {% if series.release_year %}{{ series.release_year }}{% endif %}
+      {% if series.genre %} · {{ series.genre }}{% endif %}
+      {% if series.episode_count() %} · {{ series.episode_count() }} odcinków{% endif %}
+    </p>
+    {% if series.description %}
+      <p class="hero__desc">{{ series.description }}</p>
+    {% endif %}
+  </div>
+</section>
+
+<div class="library-body">
+  <a href="{{ url_for('main.library') }}" class="player-back series-back">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Biblioteka
+  </a>
+
+  {% if not seasons %}
+    <div class="empty-state">
+      <h2>Brak odcinków</h2>
+      <p>Ten serial nie ma jeszcze żadnych dodanych odcinków.</p>
+    </div>
+  {% else %}
+    <div class="season-tabs">
+      {% for season_number in seasons.keys() %}
+        <a href="{{ url_for('main.series_detail', series_id=series.id, sezon=season_number) }}"
+           class="season-tab{{ ' is-active' if season_number == active_season else '' }}">
+          Sezon {{ season_number }}
+        </a>
+      {% endfor %}
+    </div>
+
+    <div class="episode-list">
+      {% for episode in seasons.get(active_season, []) %}
+      <a href="{{ url_for('main.episode_player', series_id=series.id, episode_id=episode.id) }}" class="episode-row">
+        <div class="episode-row__number">{{ episode.episode_number }}</div>
+        <div class="episode-row__play">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+        <div class="episode-row__info">
+          <div class="episode-row__title">{{ episode.title or "Odcinek " ~ episode.episode_number }}</div>
+          {% if episode.description %}
+            <div class="episode-row__desc">{{ episode.description[:160] }}{% if episode.description|length > 160 %}…{% endif %}</div>
+          {% endif %}
+        </div>
+        {% if episode.duration_label %}
+          <div class="episode-row__duration">{{ episode.duration_label }}</div>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

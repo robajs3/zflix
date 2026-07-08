@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edytuj odcinek" if episode else "Nowy odcinek" }} — {{ series.title }} — Zflix{% endblock %}
+{% block body_class %}page-admin{% endblock %}
+
+{% block content %}
+{% set src = form if form else episode %}
+<div class="admin-page admin-page--narrow">
+  <div class="admin-page__header">
+    <h1>{{ "Edytuj odcinek" if episode else "Dodaj odcinek" }}</h1>
+    <a href="{{ url_for('admin.episode_list', series_id=series.id) }}" class="btn btn--ghost">Anuluj</a>
+  </div>
+  <p class="field-hint">Serial: <strong>{{ series.title }}</strong></p>
+
+  <form method="post" enctype="multipart/form-data" class="movie-form">
+    <div class="field-row">
+      <label class="field">
+        <span>Sezon *</span>
+        <input type="number" name="season_number" min="1" required
+               value="{{ src.season_number if src and src.season_number else 1 }}">
+      </label>
+
+      <label class="field">
+        <span>Odcinek *</span>
+        <input type="number" name="episode_number" min="1" required
+               value="{{ src.episode_number if src and src.episode_number else 1 }}">
+      </label>
+
+      <label class="field">
+        <span>Czas trwania</span>
+        <input type="text" name="duration_label" placeholder="np. 42min" value="{{ src.duration_label if src else '' }}">
+      </label>
+    </div>
+
+    <label class="field">
+      <span>Tytuł odcinka</span>
+      <input type="text" name="title" value="{{ src.title if src else '' }}">
+    </label>
+
+    <label class="field">
+      <span>Opis</span>
+      <textarea name="description" rows="4">{{ src.description if src else '' }}</textarea>
+    </label>
+
+    {% set selected_source = (src.source_type if src and src.source_type else 'upload') %}
+    <fieldset class="field-group">
+      <legend>Źródło wideo *</legend>
+      <div class="radio-tabs">
+        <label class="radio-tab">
+          <input type="radio" name="source_type" value="upload" id="srcUpload"
+                 {% if selected_source == 'upload' %}checked{% endif %}>
+          <span>Plik wgrywany na serwer</span>
+        </label>
+        <label class="radio-tab">
+          <input type="radio" name="source_type" value="external" id="srcExternal"
+                 {% if selected_source == 'external' %}checked{% endif %}>
+          <span>Link zewnętrzny (YouTube / Vimeo / bezpośredni)</span>
+        </label>
+      </div>
+
+      <div class="field" id="uploadField">
+        <span>Plik wideo {{ "(zostaw puste, aby nie zmieniać)" if episode and episode.video_path else "" }}</span>
+        <input type="file" name="video_file" accept=".mp4,.webm,.ogg,.mov,.mkv">
+      </div>
+
+      <div class="field" id="externalField">
+        <span>Link do wideo</span>
+        <input type="url" name="external_url" placeholder="https://www.youtube.com/watch?v=..."
+               value="{{ src.external_url if src and src.external_url else '' }}">
+      </div>
+    </fieldset>
+
+    <button type="submit" class="btn btn--primary btn--block">
+      {{ "Zapisz zmiany" if episode else "Dodaj odcinek" }}
+    </button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const uploadRadio = document.getElementById("srcUpload");
+  const externalRadio = document.getElementById("srcExternal");
+  const uploadField = document.getElementById("uploadField");
+  const externalField = document.getElementById("externalField");
+
+  function syncSourceFields() {
+    const isUpload = uploadRadio.checked;
+    uploadField.style.display = isUpload ? "flex" : "none";
+    externalField.style.display = isUpload ? "none" : "flex";
+  }
+
+  uploadRadio.addEventListener("change", syncSourceFields);
+  externalRadio.addEventListener("change", syncSourceFields);
+  syncSourceFields();
+</script>
+{% endblock %}

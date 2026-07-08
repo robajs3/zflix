@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}Błąd {{ code }} — Zjebflix{% endblock %}
+{% block title %}Błąd {{ code }} — Zflix{% endblock %}
 {% block body_class %}page-error{% endblock %}
 {% block content %}
 <div class="error-page">
   <div class="error-page__code">{{ code }}</div>
   <p class="error-page__message">{{ message }}</p>
-  <a href="/zjebflix/" class="btn btn--primary">Wróć do biblioteki</a>
+  <a href="/zflix/" class="btn btn--primary">Wróć do biblioteki</a>
 </div>
 {% endblock %}

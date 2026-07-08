@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Panel admina — Zjebflix{% endblock %}
+{% block title %}Panel admina — Zflix{% endblock %}
 {% block body_class %}page-admin{% endblock %}
 
 {% block content %}
@@ -8,14 +8,14 @@
     <h1>Panel administratora</h1>
     <div class="admin-page__actions">
       <a href="{{ url_for('admin.invite_codes') }}" class="btn btn--ghost">Kody zaproszeń</a>
-      <a href="{{ url_for('admin.movie_new') }}" class="btn btn--primary">+ Dodaj film</a>
+      <a href="{{ url_for('admin.movie_new') }}" class="btn btn--primary">+ Dodaj film / serial</a>
     </div>
   </div>
 
   {% if not movies %}
     <div class="empty-state">
-      <h2>Brak filmów</h2>
-      <p>Dodaj pierwszy film do biblioteki Zjebflixa.</p>
+      <h2>Biblioteka jest pusta</h2>
+      <p>Dodaj pierwszy film lub serial do biblioteki Zflixa.</p>
     </div>
   {% else %}
   <div class="admin-table-wrap">
@@ -24,6 +24,7 @@
         <tr>
           <th>Plakat</th>
           <th>Tytuł</th>
+          <th>Typ</th>
           <th>Gatunek</th>
           <th>Rok</th>
           <th>Źródło</th>
@@ -36,10 +37,19 @@
         <tr>
           <td><img class="admin-table__poster" src="{{ movie.poster_src() }}" alt=""></td>
           <td>{{ movie.title }}</td>
+          <td>
+            {% if movie.is_series() %}
+              <span class="badge badge--series">Serial · {{ movie.episode_count() }} odc.</span>
+            {% else %}
+              <span class="badge badge--movie">Film</span>
+            {% endif %}
+          </td>
           <td>{{ movie.genre or "—" }}</td>
           <td>{{ movie.release_year or "—" }}</td>
           <td>
-            {% if movie.source_type == "upload" %}
+            {% if movie.is_series() %}
+              <span class="badge">—</span>
+            {% elif movie.source_type == "upload" %}
               <span class="badge badge--upload">Plik</span>
             {% else %}
               <span class="badge badge--external">Link</span>
@@ -47,7 +57,11 @@
           </td>
           <td>{{ movie.added_by.username if movie.added_by else "—" }}</td>
           <td class="admin-table__actions">
-            <a href="{{ url_for('main.player', movie_id=movie.id) }}" class="btn btn--tiny btn--ghost">Podgląd</a>
+            {% if movie.is_series() %}
+              <a href="{{ url_for('admin.episode_list', series_id=movie.id) }}" class="btn btn--tiny btn--ghost">Odcinki</a>
+            {% else %}
+              <a href="{{ url_for('main.player', movie_id=movie.id) }}" class="btn btn--tiny btn--ghost">Podgląd</a>
+            {% endif %}
             <a href="{{ url_for('admin.movie_edit', movie_id=movie.id) }}" class="btn btn--tiny btn--ghost">Edytuj</a>
             <form action="{{ url_for('admin.movie_delete', movie_id=movie.id) }}" method="post"
                   onsubmit="return confirm('Na pewno usunąć „{{ movie.title }}”?');">

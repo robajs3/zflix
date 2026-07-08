@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Biblioteka — Zjebflix{% endblock %}
+{% block title %}Biblioteka — Zflix{% endblock %}
 {% block body_class %}page-library{% endblock %}
 
 {% block content %}
@@ -8,27 +8,45 @@
 <section class="hero" style="--hero-image: url('{{ featured.poster_src() }}')">
   <div class="hero__scrim"></div>
   <div class="hero__content">
-    <p class="hero__eyebrow">Poleca Zjebflix</p>
+    <p class="hero__eyebrow">Poleca Zflix</p>
     <h1 class="hero__title">{{ featured.title }}</h1>
     <p class="hero__meta">
-      {% if featured.release_year %}{{ featured.release_year }}{% endif %}
+      {% if featured.is_series() %}Serial{% endif %}
+      {% if featured.release_year %} · {{ featured.release_year }}{% endif %}
       {% if featured.genre %} · {{ featured.genre }}{% endif %}
-      {% if featured.duration_label %} · {{ featured.duration_label }}{% endif %}
+      {% if featured.is_series() %}
+        {% if featured.episode_count() %} · {{ featured.episode_count() }} odc.{% endif %}
+      {% elif featured.duration_label %}
+         · {{ featured.duration_label }}
+      {% endif %}
     </p>
     {% if featured.description %}
       <p class="hero__desc">{{ featured.description[:220] }}{% if featured.description|length > 220 %}…{% endif %}</p>
     {% endif %}
     <div class="hero__actions">
+      {% if featured.is_series() %}
+      <a href="{{ url_for('main.series_detail', series_id=featured.id) }}" class="btn btn--primary btn--play">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Zobacz odcinki
+      </a>
+      {% else %}
       <a href="{{ url_for('main.player', movie_id=featured.id) }}" class="btn btn--primary btn--play">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         Odtwórz
       </a>
+      {% endif %}
     </div>
   </div>
 </section>
 {% endif %}
 
 <div class="library-body">
+  <div class="library-tabs">
+    <a href="{{ url_for('main.library', q=search) }}" class="library-tab{{ ' is-active' if not media_type else '' }}">Wszystko</a>
+    <a href="{{ url_for('main.library', q=search, typ='movie') }}" class="library-tab{{ ' is-active' if media_type == 'movie' else '' }}">Filmy</a>
+    <a href="{{ url_for('main.library', q=search, typ='series') }}" class="library-tab{{ ' is-active' if media_type == 'series' else '' }}">Seriale</a>
+  </div>
+
   {% if search %}
     <p class="library-body__search-info">Wyniki wyszukiwania dla „{{ search }}” ({{ movies|length }})</p>
   {% endif %}
@@ -40,7 +58,7 @@
         <p>Nic nie pasuje do frazy „{{ search }}”. Spróbuj innego tytułu.</p>
       {% else %}
         <h2>Biblioteka jest jeszcze pusta</h2>
-        <p>Poproś administratora o dodanie pierwszych filmów.</p>
+        <p>Poproś administratora o dodanie pierwszych filmów lub seriali.</p>
       {% endif %}
     </div>
   {% else %}
@@ -49,8 +67,11 @@
       <h2 class="row__title">{{ genre }}</h2>
       <div class="row__scroll">
         {% for movie in genre_movies %}
-        <a href="{{ url_for('main.player', movie_id=movie.id) }}" class="card">
+        <a href="{{ url_for('main.series_detail', series_id=movie.id) if movie.is_series() else url_for('main.player', movie_id=movie.id) }}" class="card">
           <div class="card__poster" style="background-image:url('{{ movie.poster_src() }}')">
+            {% if movie.is_series() %}
+              <span class="card__badge">Serial</span>
+            {% endif %}
             <div class="card__play">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
             </div>
@@ -59,7 +80,11 @@
             <div class="card__title">{{ movie.title }}</div>
             <div class="card__meta">
               {% if movie.release_year %}{{ movie.release_year }}{% endif %}
-              {% if movie.duration_label %} · {{ movie.duration_label }}{% endif %}
+              {% if movie.is_series() %}
+                {% if movie.episode_count() %} · {{ movie.episode_count() }} odc.{% endif %}
+              {% elif movie.duration_label %}
+                 · {{ movie.duration_label }}
+              {% endif %}
             </div>
           </div>
         </a>
