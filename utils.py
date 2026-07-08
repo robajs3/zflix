@@ -1,6 +1,8 @@
+import os
 import re
 import secrets
 import string
+import subprocess
 from urllib.parse import urlparse, parse_qs
 
 from flask import current_app
@@ -35,6 +37,46 @@ def safe_unique_filename(filename: str) -> str:
     ext = filename.rsplit(".", 1)[1].lower() if "." in filename else ""
     token = secrets.token_hex(12)
     return f"{token}.{ext}" if ext else token
+
+
+def needs_video_transcode(filename: str) -> bool:
+    """Sprawdza, czy dany plik wideo trzeba przekonwertować do MP4,
+    żeby dało się go odtworzyć w przeglądarce (np. AVI)."""
+    ext = filename.rsplit(".", 1)[1].lower() if "." in filename else ""
+    return ext in current_app.config.get("VIDEO_EXTENSIONS_REQUIRING_TRANSCODE", set())
+
+
+def transcode_to_mp4(src_path: str):
+    """
+    Konwertuje plik wideo pod podaną ścieżką do MP4 (H.264 + AAC) za pomocą
+    ffmpeg, zapisując wynik obok oryginału (ta sama nazwa, rozszerzenie .mp4).
+    Zwraca ścieżkę do nowego pliku albo None, jeśli konwersja się nie powiodła
+    (np. ffmpeg nie jest zainstalowany na serwerze).
+    """
+    dest_path = os.path.splitext(src_path)[0] + ".mp4"
+    try:
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-i", src_path,
+                "-c:v", "libx264",
+                "-preset", "veryfast",
+                "-crf", "23",
+                "-c:a", "aac",
+                "-b:a", "160k",
+                "-movflags", "+faststart",
+                dest_path,
+            ],
+            check=True,
+            capture_output=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        current_app.logger.error("Błąd konwersji %s do MP4: %s", src_path, exc)
+        if os.path.exists(dest_path):
+            os.remove(dest_path)
+        return None
+    return dest_path
 
 
 _YOUTUBE_HOSTS = {"www.youtube.com", "youtube.com", "m.youtube.com", "youtu.be"}

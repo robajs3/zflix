@@ -19,7 +19,9 @@ from utils import (
     generate_invite_code,
     is_allowed_image,
     is_allowed_video,
+    needs_video_transcode,
     safe_unique_filename,
+    transcode_to_mp4,
 )
 
 bp = Blueprint("admin", __name__)
@@ -54,7 +56,24 @@ def _save_poster(file_storage):
 def _save_video(file_storage):
     if file_storage and file_storage.filename and is_allowed_video(file_storage.filename):
         filename = safe_unique_filename(file_storage.filename)
-        file_storage.save(os.path.join(current_app.config["UPLOAD_FOLDER_VIDEOS"], filename))
+        folder = current_app.config["UPLOAD_FOLDER_VIDEOS"]
+        full_path = os.path.join(folder, filename)
+        file_storage.save(full_path)
+
+        if needs_video_transcode(filename):
+            new_path = transcode_to_mp4(full_path)
+            if new_path:
+                os.remove(full_path)
+                filename = os.path.basename(new_path)
+            else:
+                flash(
+                    "Nie udało się przekonwertować pliku AVI do MP4 "
+                    "(sprawdź, czy ffmpeg jest zainstalowany na serwerze). "
+                    "Plik zapisano w oryginalnym formacie, ale może się nie "
+                    "odtwarzać w przeglądarce.",
+                    "error",
+                )
+
         return filename
     return None
 

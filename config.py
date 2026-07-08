@@ -23,7 +23,11 @@ class Config:
     UPLOAD_FOLDER_VIDEOS = str(BASE_DIR / "static" / "uploads" / "videos")
     UPLOAD_FOLDER_POSTERS = str(BASE_DIR / "static" / "uploads" / "posters")
 
-    ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm", "ogg", "mov", "mkv"}
+    ALLOWED_VIDEO_EXTENSIONS = {"mp4", "webm", "ogg", "mov", "mkv", "avi"}
+
+    # Formaty, które trzeba przekonwertować do MP4, bo przeglądarki
+    # nie odtwarzają ich natywnie przez <video>.
+    VIDEO_EXTENSIONS_REQUIRING_TRANSCODE = {"avi"}
     ALLOWED_IMAGE_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
     MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", 2048))
