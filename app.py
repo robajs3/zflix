@@ -52,4 +52,7 @@ def load_user(user_id):
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=app.config["DEBUG"])
+    # 127.0.0.1: Tailscale Serve/Funnel łączy się lokalnie, nie ma potrzeby
+    # wystawiać deweloperskiego serwera Flaska na całą sieć LAN.
+    host = os.environ.get("HOST", "127.0.0.1")
+    app.run(host=host, port=5002, debug=app.config["DEBUG"])

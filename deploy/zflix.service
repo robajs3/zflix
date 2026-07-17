@@ -1,0 +1,20 @@
+[Unit]
+Description=Zflix (gunicorn)
+After=network.target postgresql.service
+
+[Service]
+# Dostosuj do swojego serwera:
+User=zflix
+Group=zflix
+WorkingDirectory=/opt/zflix
+EnvironmentFile=/opt/zflix/.env
+ExecStart=/opt/zflix/venv/bin/gunicorn \
+    --workers 3 \
+    --bind 127.0.0.1:5002 \
+    --timeout 120 \
+    app:app
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

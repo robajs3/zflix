@@ -19,6 +19,15 @@ class Config:
     # Prefiks, pod którym działa cała aplikacja
     URL_PREFIX = "/zflix"
 
+    # Izolacja ciasteczka sesji, żeby nie gryzło się z innymi appkami
+    # działającymi na tym samym hoście/domenie (np. pod Tailscale Funnel).
+    # Bez tego wszystkie apki Flask na tej domenie dzielą ciasteczko "session"
+    # i nadpisują sobie nawzajem logowanie.
+    SESSION_COOKIE_NAME = "zflix_session"
+    SESSION_COOKIE_PATH = URL_PREFIX
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "1") == "1"
+
     # Katalogi na pliki wgrywane przez admina
     UPLOAD_FOLDER_VIDEOS = str(BASE_DIR / "static" / "uploads" / "videos")
     UPLOAD_FOLDER_POSTERS = str(BASE_DIR / "static" / "uploads" / "posters")
@@ -33,4 +42,4 @@ class Config:
     MAX_UPLOAD_MB = int(os.environ.get("MAX_UPLOAD_MB", 2048))
     MAX_CONTENT_LENGTH = MAX_UPLOAD_MB * 1024 * 1024
 
-    DEBUG = os.environ.get("FLASK_DEBUG", "1") == "1"
+    DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
